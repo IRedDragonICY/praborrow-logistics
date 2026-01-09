@@ -1,13 +1,11 @@
 [package]
 name = "praborrow-logistics"
-version = "0.1.1"
-edition = "2024"
-authors = ["ireddragonicy"]
-description = "Zero-copy data abstraction layer for the Hilirisasi pipeline. Handles raw byte stream refinement without allocation overhead."
-license = "MIT"
-repository = "https://github.com/ireddragonicy/praborrow-logistics"
-documentation = "https://docs.rs/praborrow-logistics"
-readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Zero-copy buffer abstraction. Handles raw byte streams without allocation overhead."
 keywords = ["zero-copy", "buffer", "networking", "unsafe"]
 categories = ["memory-management", "network-programming"]
 

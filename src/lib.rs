@@ -1,3 +1,11 @@
+//! Zero-copy buffer abstraction for raw byte streams.
+//!
+//! Provides `RawResource` for managing raw byte buffers without allocation overhead.
+//! Uses `ManuallyDrop` to take ownership of data while exposing raw pointers.
+//!
+//! # Safety
+//! Caller is responsible for ensuring the buffer outlives all references to it.
+
 use std::mem::ManuallyDrop;
 
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
