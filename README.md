@@ -14,9 +14,12 @@ use praborrow_logistics::RawResource;
 let data = vec![0xDE, 0xAD, 0xBE, 0xEF];
 let resource = RawResource::refine(data);
 
+// Access via safe getters
+assert_eq!(resource.len(), 4);
+
+// Access raw bytes (unsafe)
 unsafe {
-    // Access via raw pointer
-    let slice = std::slice::from_raw_parts(resource.ptr, resource.len);
+    let slice = resource.as_slice();
     assert_eq!(slice[0], 0xDE);
 }
 ```

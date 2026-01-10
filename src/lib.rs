@@ -19,8 +19,8 @@ use alloc::vec::Vec;
 /// This struct holds a raw pointer to data that is NOT owned by this struct in the
 /// traditional sense (or rather, ownership is manually managed).
 pub struct RawResource {
-    pub ptr: *const u8,
-    pub len: usize,
+    ptr: *const u8,
+    len: usize,
 }
 
 impl RawResource {
@@ -33,5 +33,25 @@ impl RawResource {
             ptr: domesticated.as_mut_ptr() as *const u8,
             len: domesticated.len(),
         }
+    }
+
+    /// Returns the raw pointer to the resource data.
+    pub fn as_ptr(&self) -> *const u8 {
+        self.ptr
+    }
+
+    /// Returns the length of the resource data.
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Returns a byte slice of the resource.
+    ///
+    /// # Safety
+    /// The caller must ensure that the returned slice does not outlive the resource
+    /// or be used after the resource is dropped/invalidated.
+    pub unsafe fn as_slice(&self) -> &[u8] {
+        // SAFETY: We constructed ptr/len from a valid Vec in refine()
+        unsafe { core::slice::from_raw_parts(self.ptr, self.len) }
     }
 }
