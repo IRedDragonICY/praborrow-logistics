@@ -10,6 +10,6 @@ keywords = ["zero-copy", "buffer", "networking", "unsafe"]
 categories = ["memory-management", "network-programming"]
 
 [dependencies]
-praborrow-core = { path = "../praborrow-core", version = "0.5.0" }
-serde = { version = "1.0.228", features = ["derive"] }
-thiserror = "2.0.17"
+praborrow-core = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
