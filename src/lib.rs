@@ -4,7 +4,7 @@
 //! Uses `ManuallyDrop` to take ownership of data while exposing raw pointers.
 //!
 //! # Safety
-//! 
+//!
 //! This module uses unsafe code to manage memory manually. The `RawResource` struct
 //! takes ownership of a `Vec<u8>` via `ManuallyDrop`, preventing automatic deallocation.
 //! The `Drop` implementation properly reconstructs the `Vec` to ensure memory is freed.
@@ -15,11 +15,11 @@
 
 extern crate alloc;
 
-use core::mem::ManuallyDrop;
 use alloc::vec::Vec;
+use core::mem::ManuallyDrop;
 
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
-/// 
+///
 /// This struct holds a raw pointer to data with manually managed ownership.
 /// When the `RawResource` is dropped, the underlying memory is properly deallocated.
 ///
@@ -56,7 +56,7 @@ impl Drop for RawResource {
     fn drop(&mut self) {
         if !self.ptr.is_null() && self.cap > 0 {
             // SAFETY: ptr, len, and cap were created from a valid Vec<u8> in refine().
-            // We stored the Vec's raw pointer, length, and capacity, with the Vec's 
+            // We stored the Vec's raw pointer, length, and capacity, with the Vec's
             // memory not being deallocated due to ManuallyDrop. Reconstructing the Vec
             // here transfers ownership back, allowing proper deallocation when the
             // reconstructed Vec goes out of scope.
@@ -69,7 +69,7 @@ impl Drop for RawResource {
 
 impl RawResource {
     /// HILIRISASI DATA: Refines raw data into a downstreamable resource.
-    /// 
+    ///
     /// Consumes a `Vec<u8>` and takes manual ownership of its memory.
     /// The memory will be properly deallocated when this `RawResource` is dropped.
     ///
@@ -86,7 +86,7 @@ impl RawResource {
         if data.is_empty() {
             return Err("Cannot refine empty data: buffer must contain at least one byte");
         }
-        
+
         let mut domesticated = ManuallyDrop::new(data);
         Ok(Self {
             ptr: domesticated.as_mut_ptr() as *const u8,
