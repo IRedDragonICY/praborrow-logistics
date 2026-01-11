@@ -13,3 +13,4 @@ categories = ["memory-management", "network-programming"]
 praborrow-core = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
+bytes = "1.5"

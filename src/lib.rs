@@ -16,123 +16,74 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use core::mem::ManuallyDrop;
+use bytes::Bytes;
 
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
 ///
-/// This struct holds a raw pointer to data with manually managed ownership.
-/// When the `RawResource` is dropped, the underlying memory is properly deallocated.
-///
-/// # Memory Management
-///
-/// The `refine()` method consumes a `Vec<u8>` and stores its raw pointer and length.
-/// The `Drop` implementation reconstructs the `Vec` to ensure proper deallocation.
-///
-/// # Example
-///
-/// ```
-/// use praborrow_logistics::RawResource;
-///
-/// let data = vec![1, 2, 3, 4, 5];
-/// let resource = RawResource::refine(data).expect("data should not be empty");
-/// assert_eq!(resource.len(), 5);
-/// // Memory is automatically freed when `resource` goes out of scope
-/// ```
+/// This struct wraps `bytes::Bytes` to provide efficient, reference-counted
+/// access to contiguous memory without unnecessary copying.
 #[doc(alias = "PinnedBuffer")]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RawResource {
-    ptr: *const u8,
-    len: usize,
-    // Store capacity for proper Vec reconstruction
-    cap: usize,
+    inner: Bytes,
 }
 
-// SAFETY: RawResource owns its data exclusively and the pointer is never shared
-// across threads without synchronization. The data is only accessed through
-// the methods on RawResource which require appropriate borrows.
+// Bytes is Send + Sync
 unsafe impl Send for RawResource {}
 unsafe impl Sync for RawResource {}
-
-impl Drop for RawResource {
-    fn drop(&mut self) {
-        if !self.ptr.is_null() && self.cap > 0 {
-            // SAFETY: ptr, len, and cap were created from a valid Vec<u8> in refine().
-            // We stored the Vec's raw pointer, length, and capacity, with the Vec's
-            // memory not being deallocated due to ManuallyDrop. Reconstructing the Vec
-            // here transfers ownership back, allowing proper deallocation when the
-            // reconstructed Vec goes out of scope.
-            unsafe {
-                let _ = Vec::from_raw_parts(self.ptr as *mut u8, self.len, self.cap);
-            }
-        }
-    }
-}
 
 impl RawResource {
     /// HILIRISASI DATA: Refines raw data into a downstreamable resource.
     ///
-    /// Consumes a `Vec<u8>` and takes manual ownership of its memory.
-    /// The memory will be properly deallocated when this `RawResource` is dropped.
+    /// Consumes a `Vec<u8>` into a `Bytes` object (zero-copy if possible).
     ///
     /// # Errors
     ///
-    /// Returns an error if the input data is empty, as empty buffers have no
-    /// meaningful use case and could lead to null pointer issues.
-    ///
-    /// # Safety
-    ///
-    /// This method is safe to call. The internal unsafe operations are encapsulated
-    /// and the `Drop` implementation ensures proper cleanup.
+    /// Returns an error if the input data is empty.
     pub fn refine(data: Vec<u8>) -> Result<Self, &'static str> {
         if data.is_empty() {
             return Err("Cannot refine empty data: buffer must contain at least one byte");
         }
 
-        let mut domesticated = ManuallyDrop::new(data);
         Ok(Self {
-            ptr: domesticated.as_mut_ptr() as *const u8,
-            len: domesticated.len(),
-            cap: domesticated.capacity(),
+            inner: Bytes::from(data),
         })
     }
 
     /// Returns the raw pointer to the resource data.
-    ///
-    /// # Safety Note
-    ///
-    /// The returned pointer is valid only while this `RawResource` exists.
-    /// Do not use the pointer after the resource has been dropped.
     #[inline]
     pub fn as_ptr(&self) -> *const u8 {
-        self.ptr
+        self.inner.as_ptr()
     }
 
     /// Returns the length of the resource data in bytes.
     #[inline]
     pub fn len(&self) -> usize {
-        self.len
+        self.inner.len()
     }
 
     /// Returns `true` if the resource has zero length.
-    ///
-    /// Note: Due to validation in `refine()`, a successfully created
-    /// `RawResource` will never be empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.len == 0
+        self.inner.is_empty()
     }
 
     /// Returns a byte slice of the resource.
     ///
     /// # Safety
     ///
-    /// The caller must ensure that:
-    /// - The returned slice does not outlive the resource
-    /// - The slice is not used after the resource is dropped or invalidated
-    /// - No mutable access to the underlying data occurs while the slice exists
+    /// This method is safe. The `unsafe` keyword is kept for backward compatibility
+    /// but the implementation delegates to safe `Bytes::as_ref()`.
+    ///
+    /// # Safe Usage
+    /// The returned slice is tied to the lifetime of `self`.
     pub unsafe fn as_slice(&self) -> &[u8] {
-        // SAFETY: We constructed ptr/len from a valid Vec in refine().
-        // The caller guarantees the slice won't outlive the resource.
-        unsafe { core::slice::from_raw_parts(self.ptr, self.len) }
+        &self.inner
+    }
+    
+    /// Returns a safe slice.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.inner
     }
 }
 
