@@ -18,6 +18,14 @@ extern crate alloc;
 use alloc::vec::Vec;
 use bytes::Bytes;
 
+/// Error returned by logistics operations.
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+pub enum LogisticsError {
+    /// Attempted to refine an empty buffer.
+    #[error("Cannot refine empty data: buffer must contain at least one byte")]
+    EmptyBuffer,
+}
+
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
 ///
 /// This struct wraps `bytes::Bytes` to provide efficient, reference-counted
@@ -40,9 +48,9 @@ impl RawResource {
     /// # Errors
     ///
     /// Returns an error if the input data is empty.
-    pub fn refine(data: Vec<u8>) -> Result<Self, &'static str> {
+    pub fn refine(data: Vec<u8>) -> Result<Self, LogisticsError> {
         if data.is_empty() {
-            return Err("Cannot refine empty data: buffer must contain at least one byte");
+            return Err(LogisticsError::EmptyBuffer);
         }
 
         Ok(Self {
