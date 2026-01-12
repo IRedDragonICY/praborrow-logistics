@@ -88,7 +88,7 @@ impl RawResource {
     pub unsafe fn as_slice(&self) -> &[u8] {
         &self.inner
     }
-    
+
     /// Returns a safe slice.
     pub fn as_bytes(&self) -> &[u8] {
         &self.inner
