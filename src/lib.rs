@@ -80,6 +80,7 @@ impl RawResource {
     ///
     /// # Safe Usage
     /// The returned slice is tied to the lifetime of `self`.
+    #[deprecated(note = "Use as_bytes() instead")]
     pub unsafe fn as_slice(&self) -> &[u8] {
         &self.inner
     }
@@ -111,6 +112,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_as_slice() {
         let data = alloc::vec![10, 20, 30];
         let resource = RawResource::refine(data).expect("should succeed");
