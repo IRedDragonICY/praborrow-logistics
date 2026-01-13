@@ -21,8 +21,7 @@ use bytes::Bytes;
 /// Error returned by logistics operations.
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 pub enum LogisticsError {
-// EmptyBuffer removed as empty buffers are now allowed
-
+    // EmptyBuffer removed as empty buffers are now allowed
 }
 
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
