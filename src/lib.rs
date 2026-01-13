@@ -21,9 +21,8 @@ use bytes::Bytes;
 /// Error returned by logistics operations.
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 pub enum LogisticsError {
-    /// Attempted to refine an empty buffer.
-    #[error("Cannot refine empty data: buffer must contain at least one byte")]
-    EmptyBuffer,
+// EmptyBuffer removed as empty buffers are now allowed
+
 }
 
 /// A zero-copy buffer resource representing "Hilirisasi Data" (Downstreaming Data).
@@ -49,10 +48,7 @@ impl RawResource {
     ///
     /// Returns an error if the input data is empty.
     pub fn refine(data: Vec<u8>) -> Result<Self, LogisticsError> {
-        if data.is_empty() {
-            return Err(LogisticsError::EmptyBuffer);
-        }
-
+        // Empty buffers are now valid "zero-byte resources"
         Ok(Self {
             inner: Bytes::from(data),
         })
@@ -108,10 +104,11 @@ mod tests {
     }
 
     #[test]
-    fn test_refine_empty_fails() {
+    fn test_refine_empty_success() {
         let data: Vec<u8> = alloc::vec![];
-        let result = RawResource::refine(data);
-        assert!(result.is_err());
+        let resource = RawResource::refine(data).expect("should succeed now");
+        assert!(resource.is_empty());
+        assert_eq!(resource.len(), 0);
     }
 
     #[test]
